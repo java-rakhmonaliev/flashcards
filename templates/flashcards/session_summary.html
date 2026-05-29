@@ -1,0 +1,46 @@
+{% extends 'flashcards/base.html' %}
+{% block title %}Session Summary{% endblock %}
+
+{% block body %}
+{% load static %}
+<div class="summary-screen">
+
+  <div class="summary-score">{{ session.score_percent }}%</div>
+  <div class="summary-label">{{ session.deck.name }}</div>
+
+  <div class="summary-stats">
+    <div class="summary-stat">
+      <div class="summary-stat-value" style="color:var(--correct);">{{ session.correct_count }}</div>
+      <div class="summary-stat-label">Correct</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-value" style="color:var(--wrong);">{{ session.wrong_count }}</div>
+      <div class="summary-stat-label">Missed</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-value">{{ session.total_cards }}</div>
+      <div class="summary-stat-label">Total</div>
+    </div>
+  </div>
+
+  <div class="summary-actions">
+    <a href="{% url 'study_session_start' session.deck.pk %}" class="btn btn-primary btn-lg">Study Again</a>
+    <a href="{% url 'deck_detail' session.deck.pk %}" class="btn btn-secondary btn-lg">Back to Deck</a>
+    <a href="{% url 'deck_list' %}" class="btn btn-ghost btn-lg">All Decks</a>
+  </div>
+
+  {% if missed_cards %}
+  <div class="missed-list">
+    <h3>Missed Words</h3>
+    {% for card in missed_cards %}
+    <div class="missed-item">
+      <span class="front">{{ card.front }}</span>
+      <span class="back">{{ card.back }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+<script src="{% static 'js/main.js' %}"></script>
+{% endblock %}

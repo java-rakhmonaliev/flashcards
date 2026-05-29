@@ -1,0 +1,55 @@
+{% extends 'flashcards/base.html' %}
+{% block title %}Study — {{ session.deck.name }}{% endblock %}
+
+{% block body %}
+{% load static %}
+<div class="study-screen">
+  {% csrf_token %}
+
+  <span data-card-id="{{ card.pk }}" style="display:none;"></span>
+  <span data-session-pk="{{ session.pk }}" style="display:none;"></span>
+
+  <!-- top bar -->
+  <div class="study-topbar">
+    <a href="{% url 'deck_detail' session.deck.pk %}" class="btn btn-ghost btn-sm">✕ Exit</a>
+    <div class="study-counters">
+      <span class="counter-correct">✓ {{ correct_count }}</span>
+      <span class="counter-wrong">✗ {{ wrong_count }}</span>
+    </div>
+    <div class="text-muted">{{ current_index }} / {{ total }}</div>
+  </div>
+
+  <!-- progress bar -->
+  <div class="study-progress-bar">
+    <div class="study-progress-fill" style="width:{{ progress_percent }}%;"></div>
+  </div>
+
+  <!-- flashcard -->
+  <div class="flashcard-wrapper">
+    <div class="flashcard-inner">
+      <div class="flashcard-face front">
+        <div class="flashcard-label">{{ front_label }}</div>
+        <div class="flashcard-word">{{ show_front }}</div>
+        <div class="flashcard-hint">tap or press space to reveal</div>
+      </div>
+      <div class="flashcard-face back">
+        <div class="flashcard-label">{{ back_label }}</div>
+        <div class="flashcard-word">{{ show_back }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- answer buttons -->
+  <div class="answer-buttons">
+    <button class="btn btn-wrong">✗ Missed &nbsp;<span class="kbd">J</span></button>
+    <button class="btn btn-correct">✓ Got it &nbsp;<span class="kbd">K</span></button>
+  </div>
+
+  <p class="study-flip-hint">
+    <span class="kbd">Space</span> to flip &nbsp;·&nbsp;
+    <span class="kbd">K</span> correct &nbsp;·&nbsp;
+    <span class="kbd">J</span> missed
+  </p>
+</div>
+<script src="{% static 'js/main.js' %}"></script>
+{% endblock %}

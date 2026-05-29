@@ -1,0 +1,62 @@
+{% extends 'flashcards/base.html' %}
+{% load flashcard_tags %}
+
+{% block title %}My Decks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>My Decks</h1>
+    <p class="text-muted mt-2">{{ decks.count }} deck{{ decks.count|pluralize }}</p>
+  </div>
+  <a href="{% url 'deck_create' %}" class="btn btn-primary btn-lg">+ New Deck</a>
+</div>
+
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="message {{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if decks %}
+  <div class="deck-grid">
+    {% for deck in decks %}
+    <a href="{% url 'deck_detail' deck.pk %}" class="deck-tile">
+      <div class="deck-tile-left">
+        <div class="deck-tile-name">{{ deck.name }}</div>
+        <div class="deck-tile-meta">
+          <span>{{ deck.card_count }} card{{ deck.card_count|pluralize }}</span>
+          <span>{{ deck.mastered_count }} mastered</span>
+          {% if deck.description %}
+          <span>{{ deck.description|truncatechars:40 }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="deck-tile-right">
+        <div class="progress-ring-wrap">
+          <svg viewBox="0 0 52 52" width="52" height="52">
+            <circle class="progress-ring-bg" cx="26" cy="26" r="22"/>
+            <circle class="progress-ring-fill" cx="26" cy="26" r="22"
+              stroke-dasharray="138.23"
+              stroke-dashoffset="{{ deck.progress_percent|progress_offset }}"/>
+          </svg>
+          <div class="progress-ring-text">{{ deck.progress_percent }}%</div>
+        </div>
+        <div class="btn btn-primary">Study →</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📚</div>
+    <h3>No decks yet</h3>
+    <p>Create your first deck to start studying.</p>
+    <a href="{% url 'deck_create' %}" class="btn btn-primary btn-lg">+ Create a Deck</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block body_attrs %}{% endblock %}

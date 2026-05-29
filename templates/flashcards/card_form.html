@@ -1,0 +1,31 @@
+{% extends 'flashcards/base.html' %}
+{% block title %}Edit Card{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{% url 'deck_detail' card.deck.pk %}" class="text-muted" style="font-size:0.85rem;">← Back to Deck</a>
+    <h1 style="margin-top:8px;">Edit Card</h1>
+  </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Front</label>
+      <input type="text" name="front" class="form-control"
+        value="{{ form.front.value|default:'' }}" required>
+    </div>
+    <div class="form-group">
+      <label>Back</label>
+      <input type="text" name="back" class="form-control"
+        value="{{ form.back.value|default:'' }}" required>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{% url 'deck_detail' card.deck.pk %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

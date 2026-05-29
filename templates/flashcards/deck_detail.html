@@ -1,0 +1,170 @@
+{% extends 'flashcards/base.html' %}
+
+{% block title %}{{ deck.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{% url 'deck_list' %}" class="text-muted" style="font-size:0.85rem;">← All Decks</a>
+    <h1 style="margin-top:8px;">{{ deck.name }}</h1>
+    {% if deck.description %}
+      <p class="mt-2">{{ deck.description }}</p>
+    {% endif %}
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'deck_edit' deck.pk %}" class="btn btn-secondary">Edit Deck</a>
+    {% if deck.card_count > 0 %}
+      <a href="{% url 'study_session_start' deck.pk %}" class="btn btn-primary btn-lg">Study →</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="message {{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Stats row -->
+<div class="flex gap-3 mb-4" style="flex-wrap:wrap;">
+  <div class="card" style="flex:1;min-width:120px;text-align:center;padding:16px;">
+    <div style="font-size:1.6rem;font-weight:700;">{{ deck.card_count }}</div>
+    <div class="text-muted">Total Cards</div>
+  </div>
+  <div class="card" style="flex:1;min-width:120px;text-align:center;padding:16px;">
+    <div style="font-size:1.6rem;font-weight:700;color:var(--correct);">{{ deck.mastered_count }}</div>
+    <div class="text-muted">Mastered</div>
+  </div>
+  <div class="card" style="flex:1;min-width:120px;text-align:center;padding:16px;">
+    <div style="font-size:1.6rem;font-weight:700;">{{ deck.progress_percent }}%</div>
+    <div class="text-muted">Progress</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tab-cards">Cards ({{ deck.card_count }})</button>
+  <button class="tab-btn" data-tab="tab-add">Add Card</button>
+  <button class="tab-btn" data-tab="tab-import">Import CSV</button>
+  <button class="tab-btn" data-tab="tab-danger">⚠ Danger</button>
+</div>
+
+<!-- Tab: Cards -->
+<div id="tab-cards" class="tab-panel active">
+  {% if cards %}
+  <div class="card-table-wrap">
+    <table class="card-table">
+      <thead>
+        <tr>
+          <th>Front</th>
+          <th>Back</th>
+          <th>Streak</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for card in cards %}
+        <tr>
+          <td style="font-weight:500;">{{ card.front }}</td>
+          <td style="color:var(--text-secondary);">{{ card.back }}</td>
+          <td style="color:var(--text-muted);">{{ card.stat.streak }}/3</td>
+          <td>
+            {% if card.stat.mastered %}
+              <span class="mastered-badge">✓ Mastered</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="actions">
+              <a href="{% url 'card_edit' card.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+              <form method="post" action="{% url 'card_delete' card.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm"
+                  data-confirm="Delete this card?">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">🃏</div>
+      <h3>No cards yet</h3>
+      <p>Add cards manually or import a CSV file.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Tab: Add Card -->
+<div id="tab-add" class="tab-panel">
+  <div class="card" style="max-width:560px;">
+    <h3 style="margin-bottom:20px;">Add a Card</h3>
+    <form method="post" action="{% url 'card_create' deck.pk %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Front (word / question)</label>
+        <input type="text" name="front" class="form-control" placeholder="e.g. apple" required>
+      </div>
+      <div class="form-group">
+        <label>Back (translation / answer)</label>
+        <input type="text" name="back" class="form-control" placeholder="e.g. 사과" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Add Card</button>
+    </form>
+  </div>
+</div>
+
+<!-- Tab: Import CSV -->
+<div id="tab-import" class="tab-panel">
+  <div class="card" style="max-width:560px;">
+    <h3 style="margin-bottom:8px;">Import from CSV</h3>
+    <p style="font-size:0.85rem;margin-bottom:20px;">
+      Two columns: <code style="color:var(--accent);">front, back</code>.
+      Header row is detected and skipped automatically.
+    </p>
+    <form method="post" action="{% url 'csv_import' deck.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>CSV File</label>
+        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Import Cards</button>
+    </form>
+  </div>
+</div>
+
+<!-- Tab: Danger Zone -->
+<div id="tab-danger" class="tab-panel">
+  <div class="card" style="max-width:560px;border-color:var(--wrong-dim);">
+    <h3 style="margin-bottom:20px;color:var(--wrong);">Danger Zone</h3>
+
+    <div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border);">
+      <div style="font-weight:500;margin-bottom:4px;">Reset Progress</div>
+      <p style="font-size:0.85rem;margin-bottom:12px;">Clear all streaks, mastered flags, and stats. Cards stay.</p>
+      <form method="post" action="{% url 'deck_reset' deck.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"
+          data-confirm="Reset all progress for this deck?">Reset Progress</button>
+      </form>
+    </div>
+
+    <div>
+      <div style="font-weight:500;margin-bottom:4px;">Delete Deck</div>
+      <p style="font-size:0.85rem;margin-bottom:12px;">Permanently delete this deck and all its cards. Cannot be undone.</p>
+      <form method="post" action="{% url 'deck_delete' deck.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"
+          data-confirm="Delete the entire deck '{{ deck.name }}'? This cannot be undone.">Delete Deck</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

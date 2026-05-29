@@ -1,0 +1,40 @@
+{% extends 'flashcards/base.html' %}
+{% block title %}{{ action }} Deck{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    {% if deck %}
+      <a href="{% url 'deck_detail' deck.pk %}" class="text-muted" style="font-size:0.85rem;">← Back to Deck</a>
+    {% else %}
+      <a href="{% url 'deck_list' %}" class="text-muted" style="font-size:0.85rem;">← All Decks</a>
+    {% endif %}
+    <h1 style="margin-top:8px;">{{ action }} Deck</h1>
+  </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Deck Name</label>
+      <input type="text" name="name" class="form-control"
+        placeholder="e.g. Korean Vocabulary"
+        value="{{ form.name.value|default:'' }}" required>
+    </div>
+    <div class="form-group">
+      <label>Description <span class="text-muted">(optional)</span></label>
+      <textarea name="description" class="form-control" rows="3"
+        placeholder="What is this deck for?">{{ form.description.value|default:'' }}</textarea>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary">{{ action }} Deck</button>
+      {% if deck %}
+        <a href="{% url 'deck_detail' deck.pk %}" class="btn btn-ghost">Cancel</a>
+      {% else %}
+        <a href="{% url 'deck_list' %}" class="btn btn-ghost">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}
